@@ -1,10 +1,12 @@
 import _ from 'lodash'
 import {Document, Schema, Model, model} from 'mongoose'
+import { IAccount, IAccountDocument } from './account'
 export interface IUserDocument extends Document {
   username: string;
   password: string;
   status:string,
-  rol:string
+  rol:string,
+  account?: IAccountDocument
 }
 
 export interface IUser extends IUserDocument {}
@@ -36,6 +38,10 @@ const schema:Schema = new Schema({
   password: {
     type: String,
     required: true
+  },
+  account: {
+    type: Schema.Types.ObjectId,
+    ref:'Account'
   },
   status: {
     type: String,

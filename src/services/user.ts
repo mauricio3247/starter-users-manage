@@ -1,6 +1,7 @@
 import {User, IUser, IUserModel, IUserDocument, STATUS, ROLES}  from '@models/user'
 import {Secure} from '@core/secure'
 import _ from 'lodash';
+import { IAccountDocument } from '@models/account';
 class UserService {
   constructor (
     private user:IUserModel = User
@@ -8,8 +9,12 @@ class UserService {
 
   }
 
-  private getPublicData (usuario:IUser):IUserDocument {
-    return _.omit(usuario.toObject(),['password']) as IUserDocument;
+  private async getPublicData (user:IUser):Promise<IUserDocument> {
+    console.log('user', user)
+    if(user.account != undefined) {
+      await user.populate('account').execPopulate()
+    }
+    return _.omit(user.toObject(),['password', 'account.token', 'account.tokenHistory']) as IUserDocument;
   }
   private async _getUserByUsername (username:string, messageError='User not found') {
     let user = await this.user.findOne({username});
@@ -29,7 +34,7 @@ class UserService {
       if(user.status !== STATUS.ACTIVE) {
         throw new Error('User is inactive')
       }
-      return Secure.generateToken(this.getPublicData(user));
+      return Secure.generateToken(await this.getPublicData(user));
     } catch (error) {
       throw (new Error(error.message || 'Username or password incorrect'))
     }
@@ -39,36 +44,38 @@ class UserService {
     try {
       let payload = await Secure.checkToken(token);
       let user = await this._getUserByUsername(payload.username)
-      return this.getPublicData(user);
+      return this.getPublicData(await user);
     } catch (error) {
       throw new Error('Invalid Creds')
     }
   }
 
-  private async _createUser(username:string, password:string, rol = ROLES.STANDARDUSER ):Promise<IUserDocument>  {
+  private async _createUser(username:string, password:string, rol = ROLES.STANDARDUSER, account?: IAccountDocument ):Promise<IUserDocument>  {
     let user = new User({
       username,
       password: await Secure.hashText(password),
       rol,
       estado: STATUS.ACTIVE
     })
+    if (account != undefined) {
+      user.account = account
+    }
     await user.save();
     user = await this._getUserByUsername(user.username);
     return this.getPublicData(user);
   }
 
-  async createUser (username:string, password:string, rol = ROLES.STANDARDUSER):Promise<IUserDocument> {
+  async createUser (username:string, password:string, rol = ROLES.STANDARDUSER, account?: IAccountDocument):Promise<IUserDocument> {
     try {
       if(await this.user.findOne({username}) !== null) {
         throw new Error('Username already exist')
       }
-      let user = await this._createUser (username, password, rol);
+      let user = await this._createUser (username, password, rol, account);
       return user;
     } catch (error) {
-      
-      throw new Error('Error triying create a new user')
+      console.log('error user', error)
+      throw error
     }
-
   }
 
   async createMainUser (username: string, password:string) {
