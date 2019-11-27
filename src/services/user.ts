@@ -9,6 +9,39 @@ class UserService {
 
   }
 
+  isUserActive (user:IUserDocument) {
+    return user.status === STATUS.ACTIVE;
+  }
+
+
+  isAppAdmin (user:IUserDocument) {
+    return user.rol === ROLES.APPADMIN
+  }
+
+  isAppSupervisorLevel (user:IUserDocument) {
+    return user.rol === ROLES.APPADMIN ||  user.rol === ROLES.APPSUPERVISOR
+  }
+
+  isAppLevelRol (user:IUserDocument) {
+    return user.rol === ROLES.APPADMIN || user.rol === ROLES.APPSUPERVISOR || user.rol === ROLES.APPOPERATOR
+  }
+
+  isBusinessAdmin (user: IUserDocument) {
+    return user.rol === ROLES.BUSADMIN
+  }
+
+  isBusinessSupervisorLevel(user:IUserDocument) {
+    return user.rol === ROLES.BUSADMIN || user.rol === ROLES.BUSSUPERVISOR
+  }
+
+  isBusinessLevelRol (user:IUserDocument) {
+    return user.rol === ROLES.BUSADMIN || user.rol === ROLES.BUSSUPERVISOR || user.rol === ROLES.BUSOPERATOR
+  }
+
+  isStandardUser (user: IUserDocument) {
+    return user.rol === ROLES.STANDARDUSER
+  }
+
   private async getPublicData (user:IUser):Promise<IUserDocument> {
     console.log('user', user)
     if(user.account != undefined) {
@@ -24,17 +57,14 @@ class UserService {
     return user;
   }
 
-  async autenticateUser (username:string, password:string):Promise<string> {
+  async getUserByUsernameAndPassword (username:string, password:string):Promise<IUserDocument> {
     try {
       let user = await this._getUserByUsername(username, 'Username or password incorrect');
       if (await Secure.compareHash(password, user.password) === false ) {
         throw (new Error('Username or password incorrect'))
       }
 
-      if(user.status !== STATUS.ACTIVE) {
-        throw new Error('User is inactive')
-      }
-      return Secure.generateToken(await this.getPublicData(user));
+      return this.getPublicData(user);
     } catch (error) {
       throw (new Error(error.message || 'Username or password incorrect'))
     }

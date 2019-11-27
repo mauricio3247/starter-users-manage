@@ -9,8 +9,15 @@ class AccountService {
     private userServ =UserService
   ) {}
 
-  private getPublicData(account: IAccount) {
-    return _.omit(account.toObject(), ['token', 'tokenHistory'])
+  isAccountActive (account:IAccountDocument) {
+    return account.status === STATUS.ACTIVE
+  }
+
+  isAccountBussinesAdmin (account:IAccountDocument) {
+    return account.accountType === ACCOUNT_TYPE.BUSINESS_ACCOUNT
+  }
+  private getPublicData(account: IAccount):IAccountDocument {
+    return _.omit(account.toObject(), ['token', 'tokenHistory']) as IAccountDocument
   }
 
   private async _getAccountByIdOrFail (id:string):Promise<IAccountDocument> {
@@ -25,7 +32,7 @@ class AccountService {
     return this.account.findOne({email: email});
   }
 
-  async createAccount (email: string, username: string, password: string, type=ACCOUNT_TYPE.STANDARD_ACCOUNT, rol=ROLES.STANDARDUSER) {
+  async createAccount (email: string, type=ACCOUNT_TYPE.STANDARD_ACCOUNT) {
     try {
       if(await this._getAccountByEmail(email) != null ) {
         throw new Error('Email is used')
@@ -33,11 +40,9 @@ class AccountService {
       let account =  new Account({
         email: email,
         accountType: type,
-        token: Secure.hash256(email + username + Math.random().toString() + new Date().toTimeString())
+        token: Secure.hash256(email + Math.random().toString() + new Date().toTimeString())
       })
       await account.save()
-      await this.userServ.createUser(username, password, rol, account._id)
-      console.log('token ', account.token)
       return this.getPublicData(account)
     } catch (error) {
       console.log('error', error)

@@ -2,7 +2,7 @@ import {Router} from 'express';
 import auth from '@middleware/auth'
 import validator from '@middleware/validator'
 import getAutenticated from './get.autenticated'
-import autenticate from './autenticate'
+import autenticate from './login'
 import signin from './signin'
 import activate from './activate'
 import {check} from 'express-validator'
