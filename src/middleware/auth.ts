@@ -68,6 +68,32 @@ class AuthGuardMiddleware {
     return this.validateLevelRol(UserService.isStandardUser(req.user),req, res,next)
   }
 
+  async preventAutoUpdate(req:Request, res: Response, next: NextFunction) {
+    try {
+      if(req.user._id.toString() === req.params.id) {
+        throw new Error('Forbbiden')
+      }
+      return next();
+    } catch (error) {
+      res.status(401)
+      next(new Error('Forbiden'))
+    } 
+  }
+
+  async allowOnlyAutoUpdate (req:Request, res: Response, next: NextFunction) {
+    try {
+      if(req.user._id.toString() === req.params.id) {
+        return next();
+      }
+      throw new Error('Forbbiden')
+    } catch (error) {
+      res.status(401)
+      next(new Error('Forbiden'))
+    } 
+  }
+
+  
+
 }
 
 export default new AuthGuardMiddleware ();

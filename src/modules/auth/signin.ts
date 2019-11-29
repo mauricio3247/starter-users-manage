@@ -6,8 +6,8 @@ import { ROLES } from "@models/user";
 export default async function(req: Request, res: Response, next: NextFunction) {
   try {
     let {username, password, email, type} =req.body;
-    let token = await authService.signin(email, username, password, type)
-    return res.json({token: token})
+    let account = await authService.signin(email, username, password, type)
+    return res.json(account)
   } catch (error) {
     next(error)
   }

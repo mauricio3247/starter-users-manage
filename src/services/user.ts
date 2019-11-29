@@ -42,12 +42,20 @@ class UserService {
     return user.rol === ROLES.STANDARDUSER
   }
 
-  private async getPublicData (user:IUser):Promise<IUserDocument> {
-    console.log('user', user)
-    if(user.account != undefined) {
-      await user.populate('account').execPopulate()
+  private async _getUserById (id:string, messageError='User not found'):Promise<IUserDocument> {
+    let user = await this.user.findOne({_id: id});
+    if (user === null) {
+      throw (messageError)
     }
-    return _.omit(user.toObject(),['password', 'account.token', 'account.tokenHistory']) as IUserDocument;
+    return user;
+  }
+
+  private async _getUserByIdAndAccount (id:string, accountId:string, messageError='User not found'):Promise<IUserDocument> {
+    let user = await this.user.findOne({_id: id, account: accountId});
+    if (user === null) {
+      throw (messageError)
+    }
+    return user;
   }
   private async _getUserByUsername (username:string, messageError='User not found') {
     let user = await this.user.findOne({username});
@@ -56,6 +64,19 @@ class UserService {
     }
     return user;
   }
+
+  private async _getUsersByAccount (accountId: string) {
+    return this.user.find({account: accountId});
+  }
+
+  private async getPublicData (user:IUser):Promise<IUserDocument> {
+    console.log('user', user)
+    if(user.account != undefined) {
+      await user.populate('account').execPopulate()
+    }
+    return _.omit(user.toObject(),['password', 'account.token', 'account.tokenHistory']) as IUserDocument;
+  }
+
 
   async getUserByUsernameAndPassword (username:string, password:string):Promise<IUserDocument> {
     try {
@@ -119,6 +140,58 @@ class UserService {
       throw new Error('Error triying create a new user')
     }
 
+  }
+
+  private async _updateUser(user:IUserDocument, status:string, rol:string, password?: string) {
+    try {
+      user.status = status;
+      user.rol = rol;
+      user.password = Secure.hash256(password)
+      await user.save()
+      return this.getPublicData(user)
+    } catch (error) {
+      throw new Error('Error triying update a new user')
+    }    
+  }
+
+  async updateUserInMyAccount(id:string, account:IAccountDocument, status:string, rol:string, password?: string) {
+    try {
+      let user = await this._getUserByIdAndAccount(id, account._id);
+      return this._updateUser(user, status, rol, password)
+    } catch (error) {
+      throw new Error('Error trying update an user')
+    }  
+  }
+
+  async getAllByAccount (accountId:string) {
+    let users = await this._getUsersByAccount(accountId);
+    return Promise.all(users.map(async (user) => this.getPublicData(user)))
+  }
+
+  async getByAccount (id: string, accountId:string) {
+    return this.getPublicData(await this._getUserByIdAndAccount(id, accountId));
+  }
+
+  async deleteUserByAccount (id:string, accountId: string) {
+    try {
+      let user = await this._getUserByIdAndAccount(id, accountId)
+      user.status = STATUS.ERASED;
+      await user.save();
+      return true
+    } catch (error) {
+      throw new Error('Error trying delete an user')
+    }
+  }
+
+  async changePassword(id:string, accountId:string, password:string) {
+    try {
+      let user = await this._getUserByIdAndAccount(id, accountId)
+      user.password = Secure.hash256(password);
+      await user.save();
+      return true
+    } catch (error) {
+      throw new Error('Error trying change a password')
+    }
   }
 
   
