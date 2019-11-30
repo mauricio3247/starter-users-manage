@@ -67,6 +67,17 @@ class AccountService {
       throw error
     }
   }
+
+  async getAccountById (id:string) {
+    return this.getPublicData(await this._getAccountByIdOrFail(id))
+  }
+
+  async deleteAccount (id:string) {
+    let account = await this._getAccountByIdOrFail(id)
+    account.status = STATUS.ERASED
+    await account.save();
+    return this.getPublicData(account)
+  }
 }
 
 export default new AccountService()
