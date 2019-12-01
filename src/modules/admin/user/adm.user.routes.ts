@@ -16,19 +16,16 @@ import { ROLES, STATUS } from '@models/user';
 const router= Router();
 
 router.get('/', [
-  auth.isAutenticated,
   auth.isAppSupervisorLevel,
 ], getAll)
 
 router.get('/:id', [
-  auth.isAutenticated,
   auth.isAppSupervisorLevel,
   check('id').isMongoId(),
   validator.checkValidations
 ], get)
 
 router.post('/', [
-  auth.isAutenticated,
   auth.isAppAdmin,
   check('accountId').isMongoId().optional(),
   check('rol').isIn(_.values(ROLES)),
@@ -39,7 +36,6 @@ router.post('/', [
 
 
 router.put('/:id', [
-  auth.isAutenticated,
   auth.isAppAdmin,
   auth.preventAutoUpdate,
   check('id').isMongoId(),
@@ -50,7 +46,6 @@ router.put('/:id', [
 ], update)
 
 router.delete('/:id', [
-  auth.isAutenticated,
   auth.isAppAdmin,
   auth.preventAutoUpdate,
   check('id').isMongoId(),
@@ -58,7 +53,6 @@ router.delete('/:id', [
 ], deleteUser)
 
 router.patch('/password/', [
-  auth.isAutenticated,
   auth.allowOnlyAutoUpdate,
   validator.checkValidations
 ], changePassword)

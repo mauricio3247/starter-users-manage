@@ -7,13 +7,11 @@ import _ from 'lodash';
 const router= Router();
 
 router.get('/', [
-  auth.isAutenticated,
   auth.isBusinessSupervisorLevel,
 ], get)
 
 
 router.delete('/', [
-  auth.isAutenticated,
   auth.isBusinessAdmin,
 ], deleteAccount)
 export default router;

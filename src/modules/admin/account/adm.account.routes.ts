@@ -17,19 +17,16 @@ import { ACCOUNT_TYPE, STATUS } from '@models/account';
 const router= Router();
 
 router.get('/', [
-  auth.isAutenticated,
   auth.isAppSupervisorLevel,
 ], getAll)
 
 router.get('/:id', [
-  auth.isAutenticated,
   auth.isAppSupervisorLevel,
   check('id').isMongoId(),
   validator.checkValidations
 ], get)
 
 router.delete('/:id', [
-  auth.isAutenticated,
   auth.isAppAdmin,
   check('id').isMongoId(),
   validator.checkValidations
@@ -37,7 +34,6 @@ router.delete('/:id', [
 
 
 router.post('/', [
-  auth.isAutenticated,
   auth.isAppSupervisorLevel,
   check('email').isEmail(),
   check('type').isIn(_.values(ACCOUNT_TYPE)),
@@ -45,7 +41,6 @@ router.post('/', [
 ], create)
 
 router.put('/:id', [
-  auth.isAutenticated,
   auth.isAppSupervisorLevel,
   check('id').isMongoId(),
   check('status').isIn(_.values(STATUS)),
