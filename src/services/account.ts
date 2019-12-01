@@ -1,12 +1,10 @@
 import {Account, IAccount, IAccountModel, IAccountDocument, STATUS, ACCOUNT_TYPE}  from '@models/account'
 import {Secure} from '@core/secure'
 import _ from 'lodash';
-import { ROLES } from '@models/user';
-import UserService from './user'
 class AccountService {
   constructor (
-    private account:IAccountModel = Account,
-    private userServ =UserService
+    private accountServ:IAccountModel = Account,
+
   ) {}
 
   isAccountActive (account:IAccountDocument) {
@@ -21,7 +19,7 @@ class AccountService {
   }
 
   private async _getAccountByIdOrFail (id:string):Promise<IAccountDocument> {
-    let account = await this.account.findOne({_id: id});
+    let account = await this.accountServ.findOne({_id: id, status: {$ne: STATUS.ERASED}});
     if(account === null) {
       throw new Error('Account not found')
     }
@@ -29,7 +27,7 @@ class AccountService {
   }
 
   private async _getAccountByEmail (email:string):Promise<IAccountDocument> {
-    return this.account.findOne({email: email});
+    return this.accountServ.findOne({email: email, status: {$ne: STATUS.ERASED}});
   }
 
   async createAccount (email: string, type=ACCOUNT_TYPE.STANDARD_ACCOUNT) {
@@ -37,7 +35,7 @@ class AccountService {
       if(await this._getAccountByEmail(email) != null ) {
         throw new Error('Email is used')
       }
-      let account =  new Account({
+      let account =  new this.accountServ({
         email: email,
         accountType: type,
         token: Secure.hash256(email + Math.random().toString() + new Date().toTimeString())
@@ -75,6 +73,18 @@ class AccountService {
   async deleteAccount (id:string) {
     let account = await this._getAccountByIdOrFail(id)
     account.status = STATUS.ERASED
+    await account.save();
+    return this.getPublicData(account)
+  }
+
+  async getAll ():Promise<IAccountDocument[]> {
+    let accounts = await this.accountServ.find({ tatus: {$ne: STATUS.ERASED}})
+    return accounts.map(item => this.getPublicData(item))
+  }
+
+  async updateAccount(id:string, status: string):Promise<IAccountDocument> {
+    let account = await this._getAccountByIdOrFail(id)
+    account.status = status
     await account.save();
     return this.getPublicData(account)
   }

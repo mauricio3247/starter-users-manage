@@ -17,46 +17,47 @@ const router= Router();
 
 router.get('/', [
   auth.isAutenticated,
-  auth.isBusinessSupervisorLevel,
+  auth.isAppSupervisorLevel,
 ], getAll)
 
 router.get('/:id', [
   auth.isAutenticated,
-  auth.isBusinessSupervisorLevel,
+  auth.isAppSupervisorLevel,
   check('id').isMongoId(),
   validator.checkValidations
 ], get)
 
-router.delete('/:id', [
-  auth.isAutenticated,
-  auth.isBusinessAdmin,
-  auth.preventAutoUpdate,
-  check('id').isMongoId(),
-  validator.checkValidations
-], deleteUser)
-
 router.post('/', [
   auth.isAutenticated,
-  auth.isBusinessAdmin,
-  check('rol').isIn([ROLES.BUSADMIN, ROLES.BUSSUPERVISOR, ROLES.BUSOPERATOR]),
+  auth.isAppAdmin,
+  check('accountId').isMongoId().optional(),
+  check('rol').isIn(_.values(ROLES)),
   check('username').isLength({min: 3}),
   check('password').isLength({min: 3}),
   validator.checkValidations
 ], create)
 
+
 router.put('/:id', [
   auth.isAutenticated,
-  auth.isBusinessAdmin,
+  auth.isAppAdmin,
   auth.preventAutoUpdate,
   check('id').isMongoId(),
-  check('rol').isIn([ROLES.BUSADMIN, ROLES.BUSSUPERVISOR, ROLES.BUSOPERATOR]),
+  check('rol').isIn(_.values(ROLES)),
   check('status').isIn([STATUS.ACTIVE, STATUS.INACTIVE]),
   check('password').optional().isLength({min: 3}),
   validator.checkValidations
 ], update)
 
+router.delete('/:id', [
+  auth.isAutenticated,
+  auth.isAppAdmin,
+  auth.preventAutoUpdate,
+  check('id').isMongoId(),
+  validator.checkValidations
+], deleteUser)
 
-router.patch('/password', [
+router.patch('/password/', [
   auth.isAutenticated,
   auth.allowOnlyAutoUpdate,
   validator.checkValidations

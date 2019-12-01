@@ -45,5 +45,5 @@
     "@services": "./dist/services"
   },
   "author": "Mauricio Oropeza",
-  "license": "ISC"
+  "license": "MIT"
 }
