@@ -1,6 +1,8 @@
 import {Account, IAccount, IAccountModel, IAccountDocument, STATUS, ACCOUNT_TYPE}  from '@models/account'
 import {Secure} from '@core/secure'
+import errMsgs from '@config/error.messages'
 import _ from 'lodash';
+import logger from '@core/logger';
 class AccountService {
   constructor (
     private accountServ:IAccountModel = Account,
@@ -21,7 +23,7 @@ class AccountService {
   private async _getAccountByIdOrFail (id:string):Promise<IAccountDocument> {
     let account = await this.accountServ.findOne({_id: id, status: {$ne: STATUS.ERASED}});
     if(account === null) {
-      throw new Error('Account not found')
+      throw errMsgs.ACCOUNT.ACCOUNT_NOT_FOUND
     }
     return account;
   }
@@ -33,7 +35,7 @@ class AccountService {
   async createAccount (email: string, type=ACCOUNT_TYPE.STANDARD_ACCOUNT) {
     try {
       if(await this._getAccountByEmail(email) != null ) {
-        throw new Error('Email is used')
+        throw errMsgs.ACCOUNT.EMAIL_USED
       }
       let account =  new this.accountServ({
         email: email,
@@ -43,23 +45,23 @@ class AccountService {
       await account.save()
       return this.getPublicData(account)
     } catch (error) {
-      console.log('error', error)
       throw error
     }
   }
 
   async activateAccount (_id:string, token:string) {
     try {
+      logger.log('info', 'try activate account ' + _id + ' with token ' + token)
       let account = await this._getAccountByIdOrFail(_id);
       if (account.token === token) {
         if (account.status === STATUS.CREATED) {
           account.status = STATUS.ACTIVE;
           return account.save()
         } else {
-          throw new Error('Account have an invalid status')
+          throw errMsgs.ACCOUNT.ACCOUNT_INVALID_STATUS
         }
       } else {
-        throw new Error('Token invalid!')
+        throw errMsgs.ACCOUNT.ACCOUNT_INVALID_TOKEN
       }
     } catch (error) {
       throw error

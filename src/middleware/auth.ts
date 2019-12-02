@@ -1,22 +1,22 @@
 import UserService from '@services/user'
 import AccountService from '@services/account'
 import {Response, Request, NextFunction } from 'express-serve-static-core';
-
+import errMsgs from '@config/error.messages'
 class AuthGuardMiddleware {
   async isAutenticated (req:Request, res: Response, next: NextFunction) {
     try {
       let headersAuth = req.headers.authorization;
       if (!headersAuth) {
-        throw new Error('Invalid Creds');
+        throw errMsgs.AUTH.INVALID_CREDS;
       }
       let token:string = headersAuth.split(" ")[1];
       req.user = await UserService.getAutenticatedUser(token);
       if(!UserService.isUserActive(req.user)) {
-        throw new Error ('User inactive')
+        throw errMsgs.AUTH.USER_INACTIVE
       }
 
       if(req.user.account && !AccountService.isAccountActive(req.user.account)) {
-        throw new Error ('Account is not active')
+        throw errMsgs.AUTH.ACCOUNT_NOT_ACTIVE
       }
       next();
     } catch (error) {
@@ -31,10 +31,10 @@ class AuthGuardMiddleware {
       if(valueResult) {
         return next()
       }
-      throw new Error('Forbbiden')
+      throw errMsgs.GENERAL.FORBIDDEN
     } catch (error) {
       res.status(401)
-      next(new Error('Forbiden'))
+      next(error)
     }
   }
 
@@ -49,8 +49,6 @@ class AuthGuardMiddleware {
   async isAppLevelRol (req:Request, res: Response, next: NextFunction) {
     return this.validateLevelRol(UserService.isAppLevelRol(req.user),req, res,next)
   }
-
-  
 
   async isBusinessAdmin (req:Request, res: Response, next: NextFunction) {
     return this.validateLevelRol(UserService.isBusinessAdmin(req.user),req, res,next)
@@ -71,12 +69,12 @@ class AuthGuardMiddleware {
   async preventAutoUpdate(req:Request, res: Response, next: NextFunction) {
     try {
       if(req.user._id.toString() === req.params.id) {
-        throw new Error('Forbbiden')
+        throw errMsgs.GENERAL.FORBIDDEN
       }
       return next();
     } catch (error) {
       res.status(401)
-      next(new Error('Forbiden'))
+      next(error)
     } 
   }
 
@@ -85,10 +83,10 @@ class AuthGuardMiddleware {
       if(req.user._id.toString() === req.params.id) {
         return next();
       }
-      throw new Error('Forbbiden')
+      throw errMsgs.GENERAL.FORBIDDEN
     } catch (error) {
       res.status(401)
-      next(new Error('Forbiden'))
+      next(error)
     } 
   }
 

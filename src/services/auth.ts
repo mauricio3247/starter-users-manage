@@ -2,7 +2,7 @@ import AccountService from '@services/account'
 import UserService from '@services/user'
 import { Secure } from '@core/secure'
 import { ROLES } from '@models/user'
-
+import errMsgs from '@config/error.messages'
 class AuthService {
   constructor(
     private readonly accountServ =AccountService,
@@ -11,10 +11,10 @@ class AuthService {
     try {
       let user = await this.userServ.getUserByUsernameAndPassword(username, password)
       if(!this.userServ.isUserActive(user)) {
-        throw new Error('User is inactive')
+        throw errMsgs.AUTH.USER_INACTIVE
       }
       if(user.account && !this.accountServ.isAccountActive(user.account)) {
-        throw new Error('Account is not active')
+        throw errMsgs.AUTH.ACCOUNT_NOT_ACTIVE
       }
       return Secure.generateToken(user);
     } catch(e) {
@@ -32,7 +32,7 @@ class AuthService {
       await this.userServ.createUser(username, password, rol, account)
       return account
     } catch (error) {
-      console.log('error', error)
+      //console.log('error', error)
       throw error
     }
   }
