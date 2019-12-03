@@ -20,4 +20,4 @@ class ValidatorMiddleware {
 
 }
 
-export default new ValidatorMiddleware ();
+export default new ValidatorMiddleware();

@@ -2,7 +2,7 @@ const ERROR_MESSAGES = {
   GENERAL: {
     NOT_FOUND: {errorApp: true, code: 'NOT_FOUND', message: 'Not found'},
     FORBIDDEN: {errorApp: true, code: 'FORBIDDEN', message: 'Forbidden'},
-    VALIDATION_DATA : {errorApp: true, code: 'FORBIDDEN', message: 'Forbidden'},
+    VALIDATION_DATA : {errorApp: true, code: 'VALIDATION_DATA', message: 'Invalid Data'},
   },
   ACCOUNT: {
     ACCOUNT_NOT_FOUND: {errorApp: true, code: 'ACCOUNT_NOT_FOUND', message: 'Account not found'},

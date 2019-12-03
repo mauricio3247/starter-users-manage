@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import auth from '@middleware/auth'
+import * as auth from '@middleware/auth'
 import validator from '@middleware/validator'
 
 import {check} from 'express-validator'
@@ -52,8 +52,8 @@ router.delete('/:id', [
   validator.checkValidations
 ], deleteUser)
 
-router.patch('/password/', [
-  auth.allowOnlyAutoUpdate,
+router.patch('/password', [
+  check('password').isLength({min: 3}),
   validator.checkValidations
 ], changePassword)
 

@@ -150,7 +150,9 @@ class UserService {
 
     user.status = status;
     user.rol = rol;
-    user.password = Secure.hash256(password)
+    if(password) {
+      user.password = Secure.hash256(password)
+    }
     await user.save()
     return this.getPublicData(user)
 

@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import auth from '@middleware/auth'
+import * as auth from '@middleware/auth'
 import validator from '@middleware/validator'
 import getAutenticated from './get.autenticated'
 import autenticate from './login'
@@ -13,8 +13,8 @@ const router= Router();
 
 router.get('/profile', [auth.isAutenticated] , getAutenticated)
 
-router.get('/activate', [
-  check('id').isLength({min: 3}),
+router.get('/activate/:id/:token', [
+  check('id').isMongoId(),
   check('token').isLength({min: 3}),
   validator.checkValidations
 ], activate)

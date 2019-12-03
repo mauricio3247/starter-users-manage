@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import auth from '@middleware/auth'
+import * as auth from '@middleware/auth'
 import validator from '@middleware/validator'
 
 import {check} from 'express-validator'

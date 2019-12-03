@@ -13,7 +13,7 @@ class ErrorHandler {
     res.status(res.statusCode || 400);
     try {
       if (err.errorApp){
-        Logger.log('error', err)
+        Logger.log('error', _.clone(err))
         res.json(err);
       } else {
         Logger.log('error', err)

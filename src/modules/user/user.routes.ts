@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import auth from '@middleware/auth'
+import * as auth from '@middleware/auth'
 import validator from '@middleware/validator'
 
 import {check} from 'express-validator'
@@ -14,7 +14,6 @@ import { ROLES, STATUS } from '@models/user';
 
 
 const router= Router();
-
 router.get('/', [
   auth.isBusinessSupervisorLevel,
 ], getAll)
@@ -52,7 +51,7 @@ router.put('/:id', [
 
 
 router.patch('/password', [
-  auth.allowOnlyAutoUpdate,
+  check('password').isLength({min: 3}),
   validator.checkValidations
 ], changePassword)
 

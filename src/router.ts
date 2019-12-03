@@ -1,5 +1,5 @@
 import express from 'express';
-import authMidd from '@middleware/auth'
+import * as authMidd from '@middleware/auth'
 import authRouter from '@modules/auth/auth.routes'
 import userRouter from '@modules/user/user.routes'
 import accountRouter from '@modules/account/account.routes'
